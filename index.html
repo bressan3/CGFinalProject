@@ -1,0 +1,287 @@
+<html>
+	<head>
+		<title>Computer Graphics - Final Project</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="three.min.js"></script>
+		<script src="dat.gui.min.js"></script>
+		<script src="CombinedCamera.js"></script>
+		<script>
+			
+			var scene = new THREE.Scene();
+			//combined camera lets you switch between orographic and perspective cameras on runtime
+			var camera = new THREE.CombinedCamera( window.innerWidth / 2, window.innerHeight / 2, 70, 1, 100, - 100, 1000 );
+		
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor( 0xffffff, 1 );
+			document.body.appendChild(renderer.domElement);
+			camera.position.x = 2;
+			camera.position.y = 20;
+			camera.position.z = 15;
+			camera.lookAt(scene.position);
+
+			//draws the plane
+			var planeTexture = THREE.ImageUtils.loadTexture("Textures/grass.jpg");
+			var planeGeo = new THREE.PlaneGeometry(10,10);
+			var planeMat = new THREE.MeshLambertMaterial( {color: 0xffffff, map: planeTexture});
+			var plane = new THREE.Mesh(planeGeo,planeMat);
+			plane.rotateX(-Math.PI/2);
+			plane.translateZ(-1);
+			plane.receiveShadow=true;
+			scene.add(plane);
+
+			//draws the sea
+			var seaTexture = THREE.ImageUtils.loadTexture("Textures/water.jpg");
+			var seaGeo = new THREE.PlaneGeometry(25,25);
+			var seaMat = new THREE.MeshLambertMaterial( {color: 0xffffff, map: seaTexture} );
+			var sea = new THREE.Mesh(seaGeo,seaMat);
+			sea.rotateX(-Math.PI/2);
+			sea.translateZ(-1.5);
+			scene.add(sea);
+
+			var treeLoader = new THREE.JSONLoader();
+
+			// load a resource
+			treeLoader.load(
+				// resource URL
+				'./Tree/TreeSet3.json',
+				// Function when resource is loaded
+				function ( geometry, materials ) {
+					var treeTexture = THREE.ImageUtils.loadTexture("Tree/wood.jpg");
+					var material = new THREE.MeshLambertMaterial({color: 0xffffff, map: treeTexture});
+					var object = new THREE.Mesh(geometry,material);
+					object.position.set(3.5,0,3.5);
+					object.scale.set(0.15,0.15,0.15);
+					scene.add(object);
+				}
+			);
+
+			var lighthouseObject = [
+				new THREE.Vector3(0,0,-10),
+				new THREE.Vector3(1.5,0,-10),
+				new THREE.Vector3(3,0,0)
+			];
+
+			//lighthouse tower
+			var lighthouseTexture = THREE.ImageUtils.loadTexture("Textures/lighthouse.jpg");
+			var lighthouseObjectGeo = new THREE.LatheGeometry(lighthouseObject,30);
+			var lighthouseObjectMat = new THREE.MeshBasicMaterial({color:0xffffff, map: lighthouseTexture});
+			var lighthouseObjectShape = new THREE.Mesh(lighthouseObjectGeo,lighthouseObjectMat);
+			lighthouseObjectShape.rotateX(Math.PI/2);
+			lighthouseObjectShape.translateZ(1);
+			scene.add(lighthouseObjectShape);
+
+			//spotilight spinning top
+			var lighthouseTopPoints = [
+				new THREE.Vector3(0,0,-2),
+				new THREE.Vector3(1,0,-2),
+				new THREE.Vector3(1.5,0,0),
+			];
+
+			var lighthouseTopTexture = THREE.ImageUtils.loadTexture("Textures/metal.jpg");
+			var lighthouseTopGeo = new THREE.LatheGeometry(lighthouseTopPoints,30);
+			var lighthouseTopMat = new THREE.MeshBasicMaterial({color:0xffffff, map:lighthouseTopTexture});
+			var lighthouseTop = new THREE.Mesh(lighthouseTopGeo,lighthouseTopMat);
+			lighthouseTop.translateZ(-10);
+			lighthouseObjectShape.add(lighthouseTop);
+
+			//lighthouse cylinder (lighthouse lights)
+			var lighthouseLightTexture = THREE.ImageUtils.loadTexture("Textures/light.jpg");
+			var lighthouseCylinderGeo = new THREE.CylinderGeometry(0.35,0.5,1.25,32);
+			var lighthouseCylinderMat = new THREE.MeshLambertMaterial({color: 0xffffff, map:lighthouseTopTexture});
+			var lighthouseCylinder = new THREE.Mesh(lighthouseCylinderGeo,lighthouseCylinderMat);
+			lighthouseCylinder.rotateY(Math.PI/2);
+			lighthouseCylinder.translateY(1);
+			lighthouseCylinder.translateX(1);
+			lighthouseTop.add(lighthouseCylinder);
+
+			var lighthouseLight1Geo = new THREE.CylinderGeometry(0.15,0.35,0.25,32);
+			var lighthouseLight1Mat = new THREE.MeshLambertMaterial({color: 0xffffff, map:lighthouseLightTexture});
+			var lighthouseLight1 = new THREE.Mesh(lighthouseLight1Geo,lighthouseLight1Mat);
+			lighthouseLight1.translateY(0.75);
+			lighthouseCylinder.add(lighthouseLight1);
+
+			var lighthouseCylinderGeo2 = new THREE.CylinderGeometry(0.5,0.35,1.25,32);
+			var lighthouseCylinderMat2 = new THREE.MeshLambertMaterial({color: 0xffffff, map:lighthouseTopTexture});
+			var lighthouseCylinder2 = new THREE.Mesh(lighthouseCylinderGeo2,lighthouseCylinderMat2);
+			lighthouseCylinder2.rotateY(Math.PI/2);
+			lighthouseCylinder2.translateY(-1);
+			lighthouseCylinder2.translateX(1);
+			lighthouseTop.add(lighthouseCylinder2);
+
+			var lighthouseLight2Geo = new THREE.CylinderGeometry(0.35,0.15,0.25,32);
+			var lighthouseLight2Mat = new THREE.MeshLambertMaterial({color: 0xffffff, map:lighthouseLightTexture});
+			var lighthouseLight2 = new THREE.Mesh(lighthouseLight2Geo,lighthouseLight2Mat);
+			lighthouseLight2.translateY(-0.75);
+			lighthouseCylinder2.add(lighthouseLight2);
+
+			//lighthouse upper plataform
+			lighthousePlatformPoints = [
+				new THREE.Vector3(0,0,-4),
+				new THREE.Vector3(0.15,0,-4),
+				new THREE.Vector3(1,0,-4),
+				new THREE.Vector3(1.25,0,-3.75),
+				new THREE.Vector3(1.5,0,-3.25),
+				new THREE.Vector3(1.75,0,-3),
+				new THREE.Vector3(1.5,0,-2.5),
+				new THREE.Vector3(1.0,0,-2)
+			];
+
+			var lighthousePlatformTexture = THREE.ImageUtils.loadTexture("Textures/metal.jpg");
+			var lighthousePlatformGeo = new THREE.LatheGeometry(lighthousePlatformPoints,30);
+			var lighthousePlatformMat = new THREE.MeshBasicMaterial({color:0xffffff, map:lighthousePlatformTexture});
+			var lighthousePlatform = new THREE.Mesh(lighthousePlatformGeo,lighthousePlatformMat);
+			lighthousePlatform.translateZ(-9.5);
+			lighthouseObjectShape.add(lighthousePlatform);
+
+			//lighthouse anthena
+			lighthouseAnthenaPoints = [
+				new THREE.Vector3(0,0,-10),
+				new THREE.Vector3(0.15,0,-4)
+			];
+
+			var lighthouseAnthenaTexture = new THREE.ImageUtils.loadTexture("Textures/darkMetal.jpg");
+			var lighthouseAnthenaGeo = new THREE.LatheGeometry(lighthouseAnthenaPoints,30);
+			var lighthouseAnthenaMat = new THREE.MeshBasicMaterial({color:0xffffff, map:lighthouseAnthenaTexture});
+			var lighthouseAnthena = new THREE.Mesh(lighthouseAnthenaGeo,lighthouseAnthenaMat);
+			lighthousePlatform.add(lighthouseAnthena);
+
+			//creates light
+			var spotlight = new THREE.SpotLight(0xffffff,2,50,Math.PI/2,1);
+			spotlight.position.set(10,10,10);
+			spotlight.castShadow=true;
+			spotlight.shadowMapWidth=1024;
+			spotlight.shadowMapHeight=1024;			
+			spotlight.shadowCameraNear=1;
+			spotlight.shadowCameraFar=500;
+			spotlight.shadowCameraFov=30;			
+			scene.add(spotlight);
+
+			//camera pre-assigned path
+			var cameraPathPoints = [
+				new THREE.Vector3(2,20,10),
+				new THREE.Vector3(6,20,3),
+				new THREE.Vector3(10,10,0),
+				new THREE.Vector3(6,20,0),
+				new THREE.Vector3(2,20,10)
+			];
+
+			var cameraPath = new THREE.SplineCurve3(cameraPathPoints);
+			var PATH_TIME = 15000; //time to travel the full path in miliseconds
+			var pathParameter = 0.0;
+			var oldTime = Date.now(); //get the current time
+
+			//always looks at the origin
+			var lookAtPoints = [
+				new THREE.Vector3(0,0,0,0)
+			];
+
+			var lookAtPath = new THREE.SplineCurve3(lookAtPoints);
+
+			// datGUI -------------------------------------------------
+
+			var gui = new dat.GUI();
+
+			var rotateTop = true;
+			var topAngle = 0;
+
+			var lighthouseControls = gui.addFolder("Lighthouse Controls");
+
+			lighthouseTop.userData = new function(){
+				this.rotate = 0;
+				this.autoRotate = true;
+			}
+
+			var topAnimation = lighthouseControls.add(lighthouseTop.userData, 'autoRotate');
+			var rotateSlider = lighthouseControls.add(lighthouseTop.userData,"rotate",-180,180).step(1);
+
+			rotateSlider.onChange(function (newAngle){
+				if(!rotateTop)
+					lighthouseTop.rotation.set(0,0,newAngle*Math.PI/180);
+			});
+
+			topAnimation.onChange(function(value){
+				rotateTop =! rotateTop;
+			});
+
+			var lightOn = true;
+			lighthouseCylinder.userData = new function(){
+				this.light = true;
+			}
+
+			var light = new THREE.DirectionalLight(0xffffff,0.25);
+			lighthouseCylinder.add(light);
+			var topAnimation = lighthouseControls.add(lighthouseCylinder.userData, 'light');
+			topAnimation.onChange(function(value){
+				lightOn =! lightOn;
+				if(lightOn){
+					lighthouseLight1Mat.map = lighthouseLightTexture;
+					lighthouseLight2Mat.map = lighthouseLightTexture;
+					lighthouseCylinder.add(light);
+				} else{
+					lighthouseLight1Mat.map = lighthouseTopTexture;
+					lighthouseLight2Mat.map = lighthouseTopTexture;
+					lighthouseCylinder.remove(light);
+				}
+			});
+
+
+			var shouldMove = true;
+			var isPerspective = true;
+			var controls = new function(){
+				this.perspective = true;
+				this.moveCamera = true;
+				this.rotateCamera = 0;
+			}
+
+			var cameraAnimation = gui.add(controls, 'moveCamera');
+			cameraAnimation.onChange(function(value) {
+				shouldMove =! shouldMove;
+			});
+
+			var cameraRotate = gui.add(controls,"rotateCamera",-180,180).step(1);
+			cameraRotate.onChange(function (newAngle){
+				if(!shouldMove)
+					scene.rotation.y = newAngle*Math.PI/180;
+			});
+
+			var perspectiveCamera = gui.add(controls, 'perspective');
+			perspectiveCamera.onChange(function(value) {
+				isPerspective =! isPerspective;
+				if(isPerspective) camera.toPerspective();
+				else camera.toOrthographic();
+			});
+
+			//---------------------------------------------------------			
+			
+			render();
+
+			function render(){
+				var curTime = Date.now();
+				var elapsedTime = curTime - oldTime;
+				pathParameter = (elapsedTime/PATH_TIME)%1.0;
+
+				if(shouldMove){
+					//change camera's position
+					camera.position.copy(cameraPath.getPoint(pathParameter));
+					camera.lookAt(lookAtPath.getPoint(pathParameter));
+				}
+
+				//rotate the top part of the lighthouse
+				if(rotateTop){
+					topAngle += 0.01*Math.PI/2;
+					lighthouseTop.rotation.set(0,0,topAngle);
+				}
+
+				renderer.render(scene,camera);
+				requestAnimationFrame(render);
+			}
+
+		</script>
+	</body>
+</html>
