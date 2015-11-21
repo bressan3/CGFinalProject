@@ -164,11 +164,11 @@
 
 			//camera pre-assigned path
 			var cameraPathPoints = [
-				new THREE.Vector3(2,20,10),
+				new THREE.Vector3(2,20,30),
 				new THREE.Vector3(6,20,3),
 				new THREE.Vector3(10,10,0),
-				new THREE.Vector3(6,20,0),
-				new THREE.Vector3(2,20,10)
+				new THREE.Vector3(6,20,20),
+				new THREE.Vector3(2,20,30)
 			];
 
 			var cameraPath = new THREE.SplineCurve3(cameraPathPoints);
@@ -212,23 +212,35 @@
 			var lightOn = true;
 			lighthouseCylinder.userData = new function(){
 				this.light = true;
+				this.rotateLight = 0;
 			}
 
-			var light = new THREE.DirectionalLight(0xffffff,0.25);
-			lighthouseCylinder.add(light);
+			//lighthouse lights
+			var light1 = new THREE.DirectionalLight(0xffffff,0.25);
+			lighthouseLight1.add(light1);
+			var light2 = new THREE.DirectionalLight(0xffffff,0.25);
+			lighthouseLight2.add(light2);
 			var topAnimation = lighthouseControls.add(lighthouseCylinder.userData, 'light');
 			topAnimation.onChange(function(value){
 				lightOn =! lightOn;
 				if(lightOn){
 					lighthouseLight1Mat.map = lighthouseLightTexture;
 					lighthouseLight2Mat.map = lighthouseLightTexture;
-					lighthouseCylinder.add(light);
+					lighthouseLight1.add(light1);
+					lighthouseLight2.add(light2);
 				} else{
 					lighthouseLight1Mat.map = lighthouseTopTexture;
 					lighthouseLight2Mat.map = lighthouseTopTexture;
-					lighthouseCylinder.remove(light);
+					lighthouseLight1.remove(light1);
+					lighthouseLight2.remove(light2);
 				}
 			});
+
+			var rotateLightSlider = lighthouseControls.add(lighthouseCylinder.userData,"rotateLight",0,25).step(1);
+			rotateLightSlider.onChange(function (newAngle){
+				lighthouseCylinder.rotation.set(newAngle*Math.PI/180,0,0);
+				lighthouseCylinder2.rotation.set(-newAngle*Math.PI/180,0,0);
+			});			
 
 
 			var shouldMove = true;
